@@ -15,65 +15,114 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     }
 
-    public void createUsersTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS USERS\n" +
-                "                (\n" +
-                "                    id       BIGINT       DEFAULT NULL,\n" +
-                "                    name     VARCHAR(250) DEFAULT NULL,\n" +
-                "                    lastname VARCHAR(250) DEFAULT NULL,\n" +
-                "                    age      TINYINT      DEFAULT NULL\n" +
-                "                )";
+    public void createUsersTable() throws SQLException {
 
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(sql);
+        Statement statement = null;
+        connection.setAutoCommit(false);
+
+        try {
+            statement= connection.createStatement();
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS USERS\n" +
+                    "                (\n" +
+                    "                    id       BIGINT       DEFAULT NULL,\n" +
+                    "                    name     VARCHAR(250) DEFAULT NULL,\n" +
+                    "                    lastname VARCHAR(250) DEFAULT NULL,\n" +
+                    "                    age      TINYINT      DEFAULT NULL\n" +
+                    "                )");
+            connection.commit();
+
         } catch (SQLException e) {
             e.printStackTrace();
+            connection.rollback();
+
+        } finally {
+            if(statement != null){
+                statement.close();
+            }
+            connection.setAutoCommit(true);
         }
     }
 
-    public void dropUsersTable() {
-        String sql = "DROP TABLE IF EXISTS USERS";
+    public void dropUsersTable() throws SQLException {
 
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(sql);
+        Statement statement = null;
+        connection.setAutoCommit(false);
+
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate( "DROP TABLE IF EXISTS USERS");
+            connection.commit();
+
         } catch (SQLException e) {
             e.printStackTrace();
+            connection.rollback();
+
+        } finally {
+            if(statement != null){
+                statement.close();
+            }
+            connection.setAutoCommit(true);
         }
     }
 
-    public void saveUser(String name, String lastName, byte age) {
-        String sql = "INSERT INTO USERS (name, lastname, age) VALUES( ?, ?, ?)";//id, ?
+    public void saveUser(String name, String lastName, byte age) throws SQLException {
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        PreparedStatement preparedStatement = null;
+        connection.setAutoCommit(false);
+
+        try{
+            preparedStatement = connection.prepareStatement("INSERT INTO USERS (name, lastname, age) VALUES( ?, ?, ?)");
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, lastName);
             preparedStatement.setByte(3, age);
-
             preparedStatement.executeUpdate();
+            connection.commit();
+
         } catch (SQLException e) {
             e.printStackTrace();
+            connection.rollback();
+
+        } finally {
+            if(preparedStatement != null){
+                preparedStatement.close();
+            }
+            connection.setAutoCommit(true);
         }
     }
 
-    public void removeUserById(long id) {
-        String sql = "DELETE FROM USERS WHERE id= (?)";
+    public void removeUserById(long id) throws SQLException {
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        PreparedStatement preparedStatement = null;
+        connection.setAutoCommit(false);
+
+        try{
+            preparedStatement = connection.prepareStatement("DELETE FROM USERS WHERE id= (?)");
             preparedStatement.setLong(1, id);
 
             preparedStatement.executeUpdate();
+            connection.commit();
+
         } catch (SQLException e) {
             e.printStackTrace();
+            connection.rollback();
+        } finally {
+            if(preparedStatement != null){
+                preparedStatement.close();
+            }
+            connection.setAutoCommit(true);
         }
     }
 
-    public List<User> getAllUsers() {
-        List<User> userList = new ArrayList<>();
-        String sql = "SELECT * FROM USERS";
+    public List<User> getAllUsers() throws SQLException {
 
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(sql);
-            while (resultSet.next()) {
+        Statement statement = null;
+        connection.setAutoCommit(false);
+        List<User> userList = new ArrayList<>();
+
+        try{
+             statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery("SELECT * FROM USERS");
+             while (resultSet.next()) {
                 User user = new User();
                 user.setId(resultSet.getLong(1));
                 user.setName(resultSet.getString(2));
@@ -81,21 +130,42 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
                 user.setAge(resultSet.getByte(4));
 
                 userList.add(user);
+                connection.commit();
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
+            connection.rollback();
+
+        } finally {
+            if(statement != null){
+                statement.close();
+            }
+            connection.setAutoCommit(true);
         }
 
         return userList;
     }
 
-    public void cleanUsersTable() {
-        String sql = "TRUNCATE TABLE USERS";
+    public void cleanUsersTable() throws SQLException {
 
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(sql);
+        Statement statement = null;
+        connection.setAutoCommit(false);
+
+        try{
+            statement = connection.createStatement();
+            statement.executeUpdate("TRUNCATE TABLE USERS");
+            connection.commit();
+
         } catch (SQLException e) {
             e.printStackTrace();
+            connection.rollback();
+
+        } finally {
+            if(statement != null){
+                statement.close();
+            }
+            connection.setAutoCommit(true);
         }
     }
 
